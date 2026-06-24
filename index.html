@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Builder - Build Your Own Resume</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles-slim@2.12.0/tsparticles.slim.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>var exports = {};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 1s ease-out;
+        }
+
+        .animate-slideUp {
+            animation: slideUp 0.8s ease-out;
+        }
+
+        .animate-pulse-glow {
+            animation: pulseGlow 2s infinite;
+        }
+
+        .hover-scale {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .hover-scale:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .ripple {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ripple:active::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            animation: ripple-effect 0.6s linear;
+            animation-fill-mode: forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulseGlow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+            }
+
+            50% {
+                box-shadow: 0 0 40px rgba(59, 130, 246, 0.6);
+            }
+        }
+
+        @keyframes ripple-effect {
+            to {
+                transform: translate(-50%, -50%) scale(40);
+                opacity: 0;
+            }
+        }
+
+        .template-modern {
+            /* Inter default */
+        }
+
+        .template-classic {
+            font-family: 'Georgia', serif;
+        }
+
+        .template-creative {
+            font-family: 'Poppins', sans-serif;
+            letter-spacing: -0.5px;
+        }
+
+        .drag-active {
+            border-color: #10b981 !important;
+            background: rgba(16, 185, 129, 0.1) !important;
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+
+<body class="bg-black min-h-screen overflow-x-hidden">
+    <!-- Navbar -->
+    <nav class="bg-gray-900/90 backdrop-blur-md fixed w-full z-50 shadow-lg border-b border-blue-500/30">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1
+                class="text-3xl font-white bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent hover-scale cursor-pointer">
+                Resume.</h1>
+            <div class="flex items-center space-x-4">
+                <button id="loginBtn"
+                    class="px-6 py-2 bg-blue-600 text-white rounded-2xl font-semibold hover-scale ripple transition-all">Build
+                    Resume</button>
+                <button id="aiBtn"
+                    class="px-6 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-2xl font-semibold hover-scale ripple hidden">AI
+                    Magic ✨</button>
+            </div>
+    </nav>
+
+    <!-- Hero: Build Your Own Resume (First Interface) -->
+    <section class="pt-32 pb-24 px-4 max-w-7xl mx-auto text-center animate-fadeIn">
+        <div class="animate-slideUp">
+            <div
+                class="inline-flex items-center bg-gray-800 text-white px-6 py-3 rounded-full text-sm font-semibold mb-8 animate-pulse-glow">
+                <svg class="w-5 h-5 mr-2" fill="currentColor">
+                    <use href="#sparkles"></use>
+                </svg>
+                AI-Powered • Drag & Drop • PDF Export
+            </div>
+            <div class="relative">
+                <div id="sparkles-container" class="absolute inset-0 w-full h-full"></div>
+                <h1
+                    class="text-6xl md:text-8xl lg:text-9xl font-white bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-8 leading-tight relative z-10">
+                    Build Your Own<br><span
+                        class="from-blue-400 via-cyan-400 to-blue-600 bg-gradient-to-r bg-clip-text">Resume</span>
+                </h1>
+            </div>
+            <p class="text-2xl md:text-3xl text-gray-300 font-medium mb-12 max-w-3xl mx-auto leading-relaxed">
+                Craft stunning, professional resumes with real-time previews, smart templates & seamless exports. No
+                sign-up needed – start now!
+            </p>
+            <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
+                <button onclick="scrollToBuilder()"
+                    class="bg-blue-600 text-white text-xl px-12 py-6 rounded-3xl font-bold hover-scale ripple shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 flex items-center space-x-4 mx-auto md:mx-0">
+                    <svg class="w-8 h-8" fill="currentColor">
+                        <use href="#plus"></use>
+                    </svg>
+                    <span>Build Now</span>
+                </button>
+                <button onclick="generateDemo()"
+                    class="border-4 border-blue-600 text-blue-400 text-xl px-12 py-6 rounded-3xl font-bold hover-scale ripple hover:bg-blue-600 hover:text-white transition-all duration-300 flex items-center space-x-4">
+                    <svg class="w-8 h-8" fill="currentColor">
+                        <use href="#sparkles"></use>
+                    </svg>
+                    <span>AI Demo</span>
+                </button>
+            </div>
+        </div>
+        <!-- Scroll Indicator -->
+        <div class="mt-32 animate-pulse">
+            <svg class="w-8 h-8 mx-auto text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3">
+                </path>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Resume Builder (Scroll Target) -->
+    <section id="builder" class="py-24 px-4 max-w-7xl mx-auto">
+        <div class="text-center mb-20 animate-slideUp">
+            <h2
+                class="text-5xl md:text-7xl text-white mb-6">
+                Your Canvas</h2>
+            <p class="text-2xl text-gray-300">Interactive builder – edit live, see magic happen.</p>
+        </div>
+        <div class="grid lg:grid-cols-5 gap-8 animate-slideUp">
+            <!-- Sidebar -->
+            <div
+                class="lg:col-span-2 bg-gray-800/80 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-blue-500/30 sticky top-32 h-fit">
+                <h3 class="text-2xl font-bold mb-8 flex items-center text-blue-400"><svg class="w-8 h-8 mr-3"
+                        fill="currentColor">
+                        <use href="#tools"></use>
+                    </svg> Tools</h3>
+
+                <!-- Templates -->
+                <div class="mb-8">
+                    <label class="block font-semibold mb-4 text-white flex items-center"><svg class="w-5 h-5 mr-2"
+                            fill="currentColor">
+                            <use href="#palette"></use>
+                        </svg>Template</label>
+                    <div class="space-y-2" id="templates">
+                        <button
+                            class="template-btn w-full p-4 rounded-2xl text-left font-medium border-2 transition-all hover-scale active-template bg-blue-600 text-white shadow-lg"
+                            data-template="modern">Modern</button>
+                        <button
+                            class="template-btn w-full p-4 rounded-2xl text-left font-medium border-2 transition-all hover:bg-blue-500/20 hover:border-blue-300 text-white"
+                            data-template="classic">Classic</button>
+                        <button
+                            class="template-btn w-full p-4 rounded-2xl text-left font-medium border-2 transition-all hover:bg-blue-500/20 hover:border-blue-300 text-white"
+                            data-template="creative">Creative</button>
+                    </div>
+                </div>
+
+                <!-- Image Drag Drop -->
+                <div class="mb-8">
+                    <label class="block font-semibold mb-4 text-white flex items-center"><svg class="w-5 h-5 mr-2"
+                            fill="currentColor">
+                            <use href="#image"></use>
+                        </svg>Photo</label>
+                    <div id="dropzone"
+                        class="border-2 border-dashed border-gray-300 rounded-3xl p-12 text-center cursor-pointer hover-scale transition-all hover:border-blue-400">
+                        <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="currentColor">
+                            <use href="#image"></use>
+                        </svg>
+                        <p class="font-semibold text-gray-700">Drag image here or click</p>
+                        <p class="text-sm text-gray-500">Auto-resizes to 200x200</p>
+                        <input type="file" id="fileInput" class="hidden" accept="image/*">
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="space-y-4 mb-8">
+                    <button id="aiGenerate"
+                        class="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white p-5 rounded-2xl font-bold flex items-center justify-center space-x-3 hover-scale ripple shadow-xl hover:shadow-purple-500/25">
+                        <svg class="w-6 h-6" fill="currentColor">
+                            <use href="#sparkles"></use>
+                        </svg> AI Generate
+                    </button>
+                    <button id="downloadPDF"
+                        class="w-full bg-blue-600 text-white p-5 rounded-2xl font-bold flex items-center justify-center space-x-3 hover-scale ripple shadow-xl hover:shadow-blue-500/25">
+                        <svg class="w-6 h-6" fill="currentColor">
+                            <use href="#download"></use>
+                        </svg> <span>PDF Export</span>
+                    </button>
+
+                </div>
+
+                <!-- Links -->
+                <div>
+                    <h4 class="font-bold mb-4 flex items-center text-white"><svg class="w-5 h-5 mr-2"
+                            fill="currentColor">
+                            <use href="#link"></use>
+                        </svg>Links</h4>
+                    <input id="github" placeholder="GitHub"
+                        class="w-full p-4 border rounded-xl mb-3 focus:ring-blue-500">
+                    <input id="linkedin" placeholder="LinkedIn"
+                        class="w-full p-4 border rounded-xl mb-3 focus:ring-blue-500">
+                    <input id="portfolio" placeholder="Portfolio"
+                        class="w-full p-4 border rounded-xl focus:ring-blue-500">
+                </div>
+            </div>
+
+            <!-- Editor + Preview -->
+            <div class="lg:col-span-3 space-y-8">
+                <!-- Quick Edit -->
+                <div class="bg-gray-900/80 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-blue-500/30">
+                    <!-- Basic Info -->
+                    <div class="mb-8">
+                        <h4 class="font-bold mb-4 text-blue-400">Basic Information</h4>
+                        <div class="grid md:grid-cols-2 gap-4 mb-4">
+                            <input id="name" placeholder="Full Name"
+                                class="p-6 text-2xl font-bold border rounded-3xl focus:ring-4 ring-blue-500/30 w-full">
+                            <input id="title" placeholder="Job Title"
+                                class="p-6 text-xl font-semibold border rounded-3xl focus:ring-4 ring-blue-500/30 w-full">
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <input id="phone" placeholder="Phone Number"
+                                class="p-4 border rounded-3xl focus:ring-4 ring-blue-500/30">
+                            <input id="email" placeholder="Professional Email"
+                                class="p-4 border rounded-3xl focus:ring-4 ring-blue-500/30">
+                        </div>
+                    </div>
+
+                    <!-- Skills -->
+                    <div class="mb-8">
+                        <h4 class="font-bold mb-4 text-blue-400">Skills</h4>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <textarea id="technicalSkills" placeholder="Technical Skills (comma sep)"
+                                class="p-4 border rounded-3xl h-24 resize-none focus:ring-4 ring-blue-500/30"></textarea>
+                            <textarea id="softSkills" placeholder="Soft Skills (communication, teamwork, etc.)"
+                                class="p-4 border rounded-3xl h-24 resize-none focus:ring-4 ring-blue-500/30"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Work Experience -->
+                    <div class="mb-8">
+                        <h4 class="font-bold mb-4 text-blue-400">Work Experience</h4>
+                        <div id="experienceList" class="space-y-4 mb-4">
+                            <!-- Experience items will be added here dynamically -->
+                        </div>
+                        <button onclick="addExperience()" class="px-4 py-2 bg-blue-600 text-white rounded-2xl font-semibold hover-scale">
+                            + Add Experience
+                        </button>
+                    </div>
+
+                    <!-- Education -->
+                    <div class="mb-8">
+                        <h4 class="font-bold mb-4 text-blue-400">Education</h4>
+                        <div id="educationList" class="space-y-4 mb-4">
+                            <!-- Education items will be added here dynamically -->
+                        </div>
+                        <button onclick="addEducation()" class="px-4 py-2 bg-blue-600 text-white rounded-2xl font-semibold hover-scale">
+                            + Add Education
+                        </button>
+                    </div>
+
+                    <!-- Projects -->
+                    <div class="mb-8">
+                        <h4 class="font-bold mb-4 text-blue-400">Projects</h4>
+                        <div id="projectsList" class="space-y-4 mb-4">
+                            <!-- Project items will be added here dynamically -->
+                        </div>
+                        <button onclick="addProject()" class="px-4 py-2 bg-blue-600 text-white rounded-2xl font-semibold hover-scale">
+                            + Add Project
+                        </button>
+                    </div>
+
+                    <!-- Certifications -->
+                    <div class="mb-8">
+                        <h4 class="font-bold mb-4 text-blue-400">Certifications</h4>
+                        <div id="certificationsList" class="space-y-4 mb-4">
+                            <!-- Certification items will be added here dynamically -->
+                        </div>
+                        <button onclick="addCertification()" class="px-4 py-2 bg-blue-600 text-white rounded-2xl font-semibold hover-scale">
+                            + Add Certification
+                        </button>
+                    </div>
+
+                    <!-- Achievements -->
+                    <div class="mb-8">
+                        <h4 class="font-bold mb-4 text-blue-400">Achievements</h4>
+                        <div id="achievementsList" class="space-y-4 mb-4">
+                            <!-- Achievement items will be added here dynamically -->
+                        </div>
+                        <button onclick="addAchievement()" class="px-4 py-2 bg-blue-600 text-white rounded-2xl font-semibold hover-scale">
+                            + Add Achievement
+                        </button>
+                    </div>
+
+                    <!-- Coding Profiles -->
+                    <div class="mb-8">
+                        <h4 class="font-bold mb-4 text-blue-400">Coding Profiles</h4>
+                        <div id="codingProfilesList" class="space-y-4 mb-4">
+                            <!-- Coding profile items will be added here dynamically -->
+                        </div>
+                        <button onclick="addCodingProfile()" class="px-4 py-2 bg-blue-600 text-white rounded-2xl font-semibold hover-scale">
+                            + Add Coding Profile
+                        </button>
+                    </div>
+
+                    <!-- Additional Information -->
+                    <div class="mb-8">
+                        <h4 class="font-bold mb-4 text-blue-400">Additional Information</h4>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <textarea id="languages" placeholder="Languages (comma sep)"
+                                class="p-4 border rounded-3xl h-20 resize-none focus:ring-4 ring-blue-500/30"></textarea>
+                            <textarea id="hobbies" placeholder="Hobbies (comma sep)"
+                                class="p-4 border rounded-3xl h-20 resize-none focus:ring-4 ring-blue-500/30"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview -->
+                <div id="preview"
+                    class="bg-gray-900 p-16 rounded-4xl shadow-2xl border-4 border-gray-700 mx-auto max-w-4xl template-modern hover-scale">
+                    <!-- Dynamic content here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Login Modal (Simple Overlay) -->
+    <div id="loginModal"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center px-4 animate-fadeIn">
+        <div class="bg-gray-800 p-12 rounded-4xl max-w-md w-full shadow-2xl border-4 border-blue-500/50 hover-scale">
+            <h2 class="text-3xl font-bold text-center mb-8 text-blue-400">Sign Up</h2>
+            <input id="signupEmail" placeholder="Email (required)" class="w-full p-5 border rounded-3xl mb-6 text-lg" required>
+            <input id="signupPassword" placeholder="Password (required)" class="w-full p-5 border rounded-3xl mb-6 text-lg" required>
+            <button id="signupBtn"
+                class="w-full bg-blue-600 text-white p-5 text-xl rounded-3xl font-bold hover-scale ripple mb-6">Sign Up & Start Building</button>
+            <p class="text-center text-sm text-gray-500">Sign up required to start building your resume</p>
+        </div>
+    </div>
+
+    <script>
+        // ── Config ────────────────────────────────────────────────────────────
+        const API = 'http://localhost:3001/api';
+        let authToken = localStorage.getItem('rb_token') || null;
+
+        // ── State ─────────────────────────────────────────────────────────────
+        let resumeData = {
+            name: 'John Doe', title: 'Full Stack Developer',
+            phone: '+1 (555) 123-4567', email: 'john.doe@example.com',
+            image: null, 
+            technicalSkills: ['React', 'Node.js', 'MongoDB', 'TypeScript', 'AWS'],
+            softSkills: ['Communication', 'Teamwork', 'Problem Solving', 'Leadership'],
+            experience: [],
+            education: [],
+            projects: [],
+            certifications: [],
+            achievements: [],
+            codingProfiles: [],
+            languages: ['English', 'Spanish'],
+            hobbies: ['Photography', 'Hiking', 'Coding'],
+            template: 'modern', github: '', linkedin: '', portfolio: ''
+        };
+
+        // ── Auth helpers ──────────────────────────────────────────────────────
+        async function apiLogin(email) {
+            try {
+                const res  = await fetch(`${API}/auth/login`, {
+                    method : 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body   : JSON.stringify({ email })
+                });
+                const data = await res.json();
+                if (data.token) {
+                    authToken = data.token;
+                    localStorage.setItem('rb_token', authToken);
+                }
+            } catch (e) { console.warn('Backend offline – running locally.', e.message); }
+        }
+
+        function authHeaders() {
+            return authToken
+                ? { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }
+                : { 'Content-Type': 'application/json' };
+        }
+
+        // ── Save resume (debounced) ───────────────────────────────────────────
+        let saveTimer;
+        function scheduleSave() {
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(saveResume, 1200);
+        }
+
+        async function saveResume() {
+            if (!authToken) return;
+            try {
+                await fetch(`${API}/resume`, {
+                    method : 'POST',
+                    headers: authHeaders(),
+                    body   : JSON.stringify(resumeData)
+                });
+                showToast('✅ Resume auto-saved');
+            } catch (e) { console.warn('Save failed:', e.message); }
+        }
+
+        // ── Load resume on startup ────────────────────────────────────────────
+        async function loadResume() {
+            if (!authToken) return;
+            try {
+                const res  = await fetch(`${API}/resume`, { headers: authHeaders() });
+                const data = await res.json();
+                if (data.resume) {
+                    Object.assign(resumeData, data.resume);
+                    populateForm();
+                    showToast('📂 Resume loaded');
+                }
+            } catch (e) { console.warn('Load failed:', e.message); }
+        }
+
+        function populateForm() {
+            const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+            set('name', resumeData.name);
+            set('title', resumeData.title);
+            set('phone', resumeData.phone);
+            set('email', resumeData.email);
+            set('technicalSkills', (resumeData.technicalSkills || []).join(', '));
+            set('softSkills', (resumeData.softSkills || []).join(', '));
+            set('languages', (resumeData.languages || []).join(', '));
+            set('hobbies', (resumeData.hobbies || []).join(', '));
+            set('github', resumeData.github);
+            set('linkedin', resumeData.linkedin);
+            set('portfolio', resumeData.portfolio);
+            
+            // Populate dynamic sections
+            populateDynamicSections();
+            updatePreview();
+        }
+
+        // ── Toast ─────────────────────────────────────────────────────────────
+        function showToast(msg) {
+            let t = document.getElementById('rb-toast');
+            if (!t) {
+                t = document.createElement('div');
+                t.id = 'rb-toast';
+                t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#111827;color:#fff;padding:12px 22px;border-radius:16px;font-size:14px;font-weight:600;z-index:9999;transition:opacity .3s;';
+                document.body.appendChild(t);
+            }
+            t.textContent = msg; t.style.opacity = '1';
+            clearTimeout(t._timer);
+            t._timer = setTimeout(() => t.style.opacity = '0', 2500);
+        }
+
+        // ── Smooth Scroll ─────────────────────────────────────────────────────
+        function scrollToBuilder() {
+            document.getElementById('builder').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // ── Login Modal ───────────────────────────────────────────────────────
+        function setupLoginModal() {
+            const loginBtn = document.getElementById('loginBtn');
+            const signupBtn = document.getElementById('signupBtn');
+            const googleLoginBtn = document.getElementById('googleLoginBtn');
+            console.log('Setting up login modal - loginBtn:', loginBtn, 'signupBtn:', signupBtn, 'googleLoginBtn:', googleLoginBtn);
+            if (loginBtn) {
+                loginBtn.onclick = () => {
+                    console.log('Login button clicked!');
+                    document.getElementById('loginModal').classList.remove('hidden');
+                };
+            }
+            if (signupBtn) {
+                signupBtn.onclick = async () => {
+                    console.log('Signup button clicked!');
+                    const email = document.getElementById('signupEmail').value.trim();
+                    const password = document.getElementById('signupPassword').value.trim();
+                    
+                    // Validate required fields
+                    if (!email) {
+                        showToast('❌ Email is required');
+                        return;
+                    }
+                    if (!password) {
+                        showToast('❌ Password is required');
+                        return;
+                    }
+                    
+                    // Set email in resume data
+                    resumeData.email = email;
+                    
+                    await apiLogin(email);
+                    await loadResume();
+                    sessionStorage.setItem('signedup', 'true');
+                    document.getElementById('loginModal').classList.add('hidden');
+                    document.getElementById('aiBtn').classList.remove('hidden');
+                    showToast('✅ Signed up successfully! Start building your resume.');
+                    scrollToBuilder();
+                    updatePreview();
+                };
+            }
+        }
+
+        // ── Legacy Token Handler (for cleanup) ────────────────────────────────
+        async function checkGoogleLogin() {
+            const hash = window.location.hash;
+            if (hash && hash.includes('access_token=')) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+
+        // Run on startup
+        window.addEventListener('load', checkGoogleLogin);
+
+        // ── Photo Upload (backend) ────────────────────────────────────────────
+        function initDropzone() {
+            const dropzone  = document.getElementById('dropzone');
+            const fileInput = document.getElementById('fileInput');
+            if (!dropzone || !fileInput) {
+                console.warn('Dropzone elements not found');
+                return;
+            }
+            
+            console.log('Dropzone found, setting up event listeners');
+            dropzone.ondragover = (e) => { e.preventDefault(); dropzone.classList.add('drag-active'); };
+            dropzone.ondragleave = () => dropzone.classList.remove('drag-active');
+            dropzone.ondrop = (e) => { e.preventDefault(); dropzone.classList.remove('drag-active'); handlePhoto(e.dataTransfer.files[0]); };
+            dropzone.onclick = () => { 
+                console.log('Dropzone clicked!');
+                fileInput.click(); 
+            };
+            fileInput.onchange = (e) => handlePhoto(e.target.files[0]);
+        }
+
+        async function handlePhoto(file) {
+            if (!file) return;
+            // Try backend upload first
+            try {
+                const form = new FormData();
+                form.append('photo', file);
+                const res  = await fetch(`${API}/upload/photo`, { method: 'POST', body: form });
+                const data = await res.json();
+                if (data.photoUrl) {
+                    resumeData.image = data.photoUrl;
+                    updatePreview(); scheduleSave();
+                    showToast('📸 Photo uploaded to server');
+                    return;
+                }
+            } catch (_) { /* Backend offline → fallback to local */ }
+
+            // Fallback: client-side resize
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 200; canvas.height = 200;
+                canvas.getContext('2d').drawImage(img, 0, 0, 200, 200);
+                canvas.toBlob((blob) => { resumeData.image = URL.createObjectURL(blob); updatePreview(); });
+            };
+            img.src = URL.createObjectURL(file);
+        }
+
+        // ── Real-time inputs ──────────────────────────────────────────────────
+        function setupRealtimeInputs() {
+            ['name', 'title', 'phone', 'email', 'github', 'linkedin', 'portfolio'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('input', (e) => {
+                        resumeData[id] = e.target.value;
+                        updatePreview();
+                        scheduleSave();
+                    });
+                }
+            });
+
+            // Handle array inputs (skills, languages, hobbies)
+            ['technicalSkills', 'softSkills', 'languages', 'hobbies'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('input', (e) => {
+                        resumeData[id] = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+                        updatePreview();
+                        scheduleSave();
+                    });
+                }
+            });
+        }
+
+        // ── Templates ─────────────────────────────────────────────────────────
+        function setupTemplates() {
+            document.querySelectorAll('.template-btn').forEach(btn => {
+                btn.onclick = () => {
+                    document.querySelector('.active-template')?.classList.remove('active-template', 'bg-blue-600', 'shadow-lg');
+                    btn.classList.add('active-template', 'bg-blue-600', 'shadow-lg');
+                    resumeData.template = btn.dataset.template;
+                    updatePreview(); scheduleSave();
+                };
+            });
+        }
+
+        // ── Update Preview ────────────────────────────────────────────────────
+        function updatePreview() {
+            const preview = document.getElementById('preview');
+            preview.className = `bg-white p-8 mx-auto max-w-4xl hover-scale animate-fadeIn`;
+            
+            // Contact info
+            const contactHTML = (resumeData.phone || resumeData.email) ? `
+                <div class="flex justify-center gap-6 mb-4 text-gray-900 text-sm">
+                    ${resumeData.phone ? `<span>${resumeData.phone}</span>` : ''}
+                    ${resumeData.email ? `<span>${resumeData.email}</span>` : ''}
+                </div>` : '';
+            
+            // Experience HTML
+            const expHTML = (resumeData.experience || []).map(e => `
+                <div class="mb-4">
+                    <div class="flex justify-between items-baseline">
+                        <strong class="text-gray-900">${e.role}</strong>
+                        <span class="text-gray-900 text-sm">${e.period}</span>
+                    </div>
+                    <div class="text-gray-900 mb-1">${e.company}</div>
+                    <ul class="text-gray-900 text-sm ml-4 mt-1">
+                        ${e.desc ? e.desc.split('\n').map(d => `<li>${d}</li>`).join('') : ''}
+                    </ul>
+                </div>`).join('');
+            
+            // Education HTML
+            const eduHTML = (resumeData.education || []).map(e => `
+                <div class="mb-3">
+                    <div class="flex justify-between items-baseline">
+                        <strong class="text-gray-900">${e.degree}</strong>
+                        <span class="text-gray-900 text-sm">${e.year}</span>
+                    </div>
+                    <div class="text-gray-900">${e.school}</div>
+                    ${e.cgpa ? `<div class="text-gray-900 text-sm">CGPA: ${e.cgpa}</div>` : ''}
+                </div>`).join('');
+            
+            // Projects HTML
+            const projHTML = (resumeData.projects || []).map(p => `
+                <div class="mb-4">
+                    <div class="flex justify-between items-start mb-1">
+                        <strong class="text-gray-900">${p.name}</strong>
+                        ${p.technologies ? `<span class="text-gray-900 text-sm">${p.technologies}</span>` : ''}
+                    </div>
+                    <ul class="text-gray-900 text-sm ml-4 mt-1">
+                        ${p.description ? p.description.split('\n').map(d => `<li>${d}</li>`).join('') : ''}
+                    </ul>
+                    ${p.image ? `<img src="${p.image}" crossorigin="anonymous" class="mt-2 max-w-xs h-auto rounded border border-gray-200">` : ''}
+                    ${p.link ? `<a href="${p.link}" class="text-blue-600 text-sm hover:underline" target="_blank">View Project →</a>` : ''}
+                </div>`).join('');
+            
+            // Certifications HTML
+            const certHTML = (resumeData.certifications || []).map(c => `
+                <div class="mb-3">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <strong class="text-gray-900">${c.name}</strong>
+                            <div class="text-gray-900 text-sm">${c.issuer}</div>
+                        </div>
+                        <span class="text-gray-900 text-sm">${c.date}</span>
+                    </div>
+                    ${c.image ? `<img src="${c.image}" crossorigin="anonymous" class="mt-2 max-w-xs h-auto rounded border border-gray-200">` : ''}
+                    ${c.link ? `<a href="${c.link}" class="text-blue-600 text-sm hover:underline" target="_blank">View Certificate →</a>` : ''}
+                </div>`).join('');
+            
+            // Achievements HTML
+            const achievementHTML = (resumeData.achievements || []).map(a => `
+                <div class="mb-3">
+                    <div class="flex justify-between items-baseline">
+                        <strong class="text-gray-900">${a.title}</strong>
+                        <span class="text-gray-900 text-sm">${a.date}</span>
+                    </div>
+                    ${a.type ? `<div class="text-gray-900 text-sm">Type: ${a.type}</div>` : ''}
+                    ${a.description ? `<div class="text-gray-900 text-sm mt-1">${a.description}</div>` : ''}
+                </div>`).join('');
+            
+            // Coding Profiles HTML
+            const codingProfilesHTML = (resumeData.codingProfiles || []).map(p => `
+                <div class="mb-3">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <strong class="text-gray-900">${p.platform}</strong>
+                            <div class="text-gray-900 text-sm">${p.username}</div>
+                            ${p.stats ? `<div class="text-gray-900 text-sm">${p.stats}</div>` : ''}
+                        </div>
+                        ${p.url ? `<a href="${p.url}" class="text-blue-600 text-sm hover:underline" target="_blank">View Profile →</a>` : ''}
+                    </div>
+                </div>`).join('');
+            
+            // Skills HTML
+            const techSkillsHTML = (resumeData.technicalSkills || []).map(s => 
+                `<span class="text-gray-900">${s}</span>`
+            ).join(' • ');
+            const softSkillsHTML = (resumeData.softSkills || []).map(s => 
+                `<span class="text-gray-900">${s}</span>`
+            ).join(' • ');
+            
+            // Languages and Hobbies
+            const languagesHTML = (resumeData.languages || []).map(l => 
+                `<span class="text-gray-900">${l}</span>`
+            ).join(', ');
+            const hobbiesHTML = (resumeData.hobbies || []).map(h => 
+                `<span class="text-gray-900">${h}</span>`
+            ).join(', ');
+            
+            preview.innerHTML = `
+                <style>
+                    #preview, #preview * { color: #111827 !important; }
+                    #preview a { color: #2563eb !important; }
+                    #preview .border-b { border-color: #d1d5db !important; }
+                </style>
+                <div class="text-center mb-6">
+                  ${resumeData.image ? `<img src="${resumeData.image}" crossorigin="anonymous" class="w-24 h-24 mx-auto rounded-full object-cover mb-4 border-2 border-gray-300">` : ''}
+                  <h1 class="text-3xl font-bold text-gray-900 mb-2">${resumeData.name}</h1>
+                  <h2 class="text-lg text-gray-900 mb-3">${resumeData.title}</h2>
+                  ${contactHTML}
+                  ${resumeData.summary ? `<p class="text-gray-900 max-w-2xl mx-auto text-sm mb-4">${resumeData.summary}</p>` : ''}
+                </div>
+                
+                <div class="text-left space-y-6">
+                  ${techSkillsHTML || softSkillsHTML ? `
+                    <div>
+                      <h3 class="text-lg font-bold text-gray-900 mb-2 border-b border-gray-300 pb-1">SKILLS</h3>
+                      ${techSkillsHTML ? `<div class="text-sm text-gray-900 mb-2"><strong>Technical:</strong> ${techSkillsHTML}</div>` : ''}
+                      ${softSkillsHTML ? `<div class="text-sm text-gray-900"><strong>Soft Skills:</strong> ${softSkillsHTML}</div>` : ''}
+                    </div>` : ''}
+                  
+                  ${expHTML ? `
+                    <div>
+                      <h3 class="text-lg font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">EXPERIENCE</h3>
+                      <div>${expHTML}</div>
+                    </div>` : ''}
+                  
+                  ${eduHTML ? `
+                    <div>
+                      <h3 class="text-lg font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">EDUCATION</h3>
+                      <div>${eduHTML}</div>
+                    </div>` : ''}
+                  
+                  ${projHTML ? `
+                    <div>
+                      <h3 class="text-lg font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">PROJECTS</h3>
+                      <div>${projHTML}</div>
+                    </div>` : ''}
+                  
+                  ${certHTML ? `
+                    <div>
+                      <h3 class="text-lg font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">CERTIFICATIONS</h3>
+                      <div>${certHTML}</div>
+                    </div>` : ''}
+                  
+                  ${achievementHTML ? `
+                    <div>
+                      <h3 class="text-lg font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">ACHIEVEMENTS</h3>
+                      <div>${achievementHTML}</div>
+                    </div>` : ''}
+                  
+                  ${codingProfilesHTML ? `
+                    <div>
+                      <h3 class="text-lg font-bold text-gray-900 mb-3 border-b border-gray-300 pb-1">CODING PROFILES</h3>
+                      <div>${codingProfilesHTML}</div>
+                    </div>` : ''}
+                  
+                  ${languagesHTML || hobbiesHTML ? `
+                    <div>
+                      <h3 class="text-lg font-bold text-gray-900 mb-2 border-b border-gray-300 pb-1">ADDITIONAL INFORMATION</h3>
+                      ${languagesHTML ? `<div class="text-sm text-gray-900 mb-2"><strong>Languages:</strong> ${languagesHTML}</div>` : ''}
+                      ${hobbiesHTML ? `<div class="text-sm text-gray-900"><strong>Hobbies:</strong> ${hobbiesHTML}</div>` : ''}
+                    </div>` : ''}
+                  
+                  ${resumeData.github || resumeData.linkedin || resumeData.portfolio ? `
+                    <div>
+                      <h3 class="text-lg font-bold text-gray-900 mb-2 border-b border-gray-300 pb-1">LINKS</h3>
+                      ${resumeData.github ? `<p class="text-sm text-gray-900">GitHub: ${resumeData.github}</p>` : ''}
+                      ${resumeData.linkedin ? `<p class="text-sm text-gray-900">LinkedIn: ${resumeData.linkedin}</p>` : ''}
+                      ${resumeData.portfolio ? `<p class="text-sm text-gray-900">Portfolio: ${resumeData.portfolio}</p>` : ''}
+                    </div>` : ''}
+                </div>`;
+            lucide.createIcons();
+        }
+
+        // ── Dynamic Section Functions ───────────────────────────────────────────
+        function populateDynamicSections() {
+            // Populate Experience
+            const experienceList = document.getElementById('experienceList');
+            experienceList.innerHTML = '';
+            (resumeData.experience || []).forEach((exp, index) => {
+                experienceList.appendChild(createExperienceItem(exp, index));
+            });
+
+            // Populate Education
+            const educationList = document.getElementById('educationList');
+            educationList.innerHTML = '';
+            (resumeData.education || []).forEach((edu, index) => {
+                educationList.appendChild(createEducationItem(edu, index));
+            });
+
+            // Populate Projects
+            const projectsList = document.getElementById('projectsList');
+            projectsList.innerHTML = '';
+            (resumeData.projects || []).forEach((proj, index) => {
+                projectsList.appendChild(createProjectItem(proj, index));
+            });
+
+            // Populate Certifications
+            const certificationsList = document.getElementById('certificationsList');
+            certificationsList.innerHTML = '';
+            (resumeData.certifications || []).forEach((cert, index) => {
+                certificationsList.appendChild(createCertificationItem(cert, index));
+            });
+
+            // Populate Achievements
+            const achievementsList = document.getElementById('achievementsList');
+            achievementsList.innerHTML = '';
+            (resumeData.achievements || []).forEach((achievement, index) => {
+                achievementsList.appendChild(createAchievementItem(achievement, index));
+            });
+
+            // Populate Coding Profiles
+            const codingProfilesList = document.getElementById('codingProfilesList');
+            codingProfilesList.innerHTML = '';
+            (resumeData.codingProfiles || []).forEach((profile, index) => {
+                codingProfilesList.appendChild(createCodingProfileItem(profile, index));
+            });
+        }
+
+        function createProjectItem(proj, index) {
+            const div = document.createElement('div');
+            div.className = 'bg-gray-50 p-4 rounded-2xl border border-gray-200';
+            div.innerHTML = `
+                <div class="grid md:grid-cols-2 gap-3 mb-3">
+                    <input type="text" placeholder="Project Name" value="${proj.name || ''}" 
+                           class="p-3 border rounded-xl focus:ring-blue-500 text-gray-900" onchange="updateProject(${index}, 'name', this.value)">
+                    <input type="text" placeholder="Technologies" value="${proj.technologies || ''}" 
+                           class="p-3 border rounded-xl focus:ring-blue-500 text-gray-900" onchange="updateProject(${index}, 'technologies', this.value)">
+                </div>
+                <div class="mb-3">
+                    <textarea placeholder="Project Description" class="p-3 border rounded-xl w-full h-20 resize-none focus:ring-blue-500 text-gray-900" 
+                              onchange="updateProject(${index}, 'description', this.value)">${proj.description || ''}</textarea>
+                </div>
+                <div class="grid md:grid-cols-2 gap-3 mb-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Project Image</label>
+                        <input type="file" accept="image/*" onchange="handleProjectImage(${index}, this.files[0])" 
+                               class="p-2 border rounded-xl focus:ring-blue-500 w-full">
+                        ${proj.image ? `<img src="${proj.image}" class="mt-2 h-16 w-auto rounded border border-gray-200">` : ''}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Project Link</label>
+                        <input type="url" placeholder="https://..." value="${proj.link || ''}" 
+                               class="p-3 border rounded-xl focus:ring-blue-500 w-full" onchange="updateProject(${index}, 'link', this.value)">
+                        ${proj.link ? `<a href="${proj.link}" target="_blank" class="text-blue-600 text-xs hover:underline mt-1 block">View Link →</a>` : ''}
+                    </div>
+                </div>
+                <button type="button" onclick="removeProject(${index})" 
+                        class="px-3 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600">Remove</button>
+            `;
+            return div;
+        }
+
+        function createExperienceItem(exp, index) {
+            const div = document.createElement('div');
+            div.className = 'bg-gray-50 p-4 rounded-2xl border border-gray-200';
+            div.innerHTML = `
+                <div class="grid md:grid-cols-2 gap-3 mb-3">
+                    <input type="text" placeholder="Job Title" value="${exp.role || ''}" 
+                           class="p-3 border rounded-xl focus:ring-blue-500" onchange="updateExperience(${index}, 'role', this.value)">
+                    <input type="text" placeholder="Company" value="${exp.company || ''}" 
+                           class="p-3 border rounded-xl focus:ring-blue-500" onchange="updateExperience(${index}, 'company', this.value)">
+                </div>
+                <div class="grid md:grid-cols-2 gap-3 mb-3">
+                    <input type="text" placeholder="Period (e.g., 2020-2023)" value="${exp.period || ''}" 
+                           class="p-3 border rounded-xl focus:ring-blue-500" onchange="updateExperience(${index}, 'period', this.value)">
+                    <button type="button" onclick="removeExperience(${index})" 
+                            class="px-3 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600">Remove</button>
+                </div>
+                <textarea placeholder="Job Description" class="p-3 border rounded-xl w-full h-20 resize-none focus:ring-blue-500" 
+                          onchange="updateExperience(${index}, 'desc', this.value)">${exp.desc || ''}</textarea>
+            `;
+            return div;
+        }
+
+        function createEducationItem(edu, index) {
+            const div = document.createElement('div');
+            div.className = 'bg-gray-50 p-4 rounded-2xl border border-gray-200';
+            div.innerHTML = `
+                <div class="grid md:grid-cols-2 gap-3 mb-3">
+                    <input type="text" placeholder="Degree" value="${edu.degree || ''}" 
+                           class="p-3 border rounded-xl focus:ring-blue-500" onchange="updateEducation(${index}, 'degree', this.value)">
+                    <input type="text" placeholder="University" value="${edu.school || ''}" 
+                           class="p-3 border rounded-xl focus:ring-blue-500 text-black" onchange="updateEducation(${index}, 'school', this.value)">
+                </div>
+                <div class="grid md:grid-cols-3 gap-3 mb-3">
+                    <input type="text" placeholder="Graduation Year" value="${edu.year || ''}" 
+                           class="p-3 border rounded-xl focus:ring-blue-500" onchange="updateEducation(${index}, 'year', this.value)">
+                    <input type="text" placeholder="CGPA/GPA" value="${edu.cgpa || ''}" 
+                           class="p-3 border rounded-xl focus:ring-blue-500 text-black" onchange="updateEducation(${index}, 'cgpa', this.value)">
+                    <button type="button" onclick="removeEducation(${index})" 
+                            class="px-3 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600">Remove</button>
+                </div>
+                <textarea placeholder="Education Description" class="p-3 border rounded-xl w-full h-20 resize-none focus:ring-blue-500" 
+                          onchange="updateEducation(${index}, 'desc', this.value)">${edu.desc || ''}</textarea>
+            `;
+            return div;
+        }
+
+        function createCertificationItem(cert, index) {
+            const div = document.createElement('div');
+            div.className = 'bg-gray-50 p-4 rounded-2xl border border-gray-200';
+            div.innerHTML = `
+                <div class="grid md:grid-cols-2 gap-3 mb-3">
+                    <input type="text" placeholder="Certification Name" value="${cert.name || ''}" 
+                           class="p-3 border rounded-xl focus:ring-blue-500" onchange="updateCertification(${index}, 'name', this.value)">
+                    <input type="text" placeholder="Issuing Organization" value="${cert.issuer || ''}" 
+                           class="p-3 border rounded-xl focus:ring-blue-500" onchange="updateCertification(${index}, 'issuer', this.value)">
+                </div>
+                <div class="grid md:grid-cols-2 gap-3 mb-3">
+                    <input type="text" placeholder="Date" value="${cert.date || ''}" 
+                           class="p-3 border rounded-xl focus:ring-blue-500" onchange="updateCertification(${index}, 'date', this.value)">
+                    <button type="button" onclick="removeCertification(${index})" 
+                            class="px-3 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600">Remove</button>
+                </div>
+                <div class="grid md:grid-cols-2 gap-3 mb-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Certification Image</label>
+                        <input type="file" accept="image/*" onchange="handleCertificationImage(${index}, this.files[0])" 
+                               class="p-2 border rounded-xl focus:ring-blue-500 w-full">
+                        ${cert.image ? `<img src="${cert.image}" class="mt-2 h-16 w-auto rounded border border-gray-200">` : ''}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Certification Link</label>
+                        <input type="url" placeholder="https://..." value="${cert.link || ''}" 
+                               class="p-3 border rounded-xl focus:ring-blue-500 w-full" onchange="updateCertification(${index}, 'link', this.value)">
+                        ${cert.link ? `<a href="${cert.link}" target="_blank" class="text-blue-600 text-xs hover:underline mt-1 block">View Certificate →</a>` : ''}
+                    </div>
+                </div>
+            `;
+            return div;
+        }
+
+        function createAchievementItem(achievement, index) {
+            const div = document.createElement('div');
+            div.className = 'bg-gray-50 p-4 rounded-2xl border border-gray-200';
+            div.innerHTML = `
+                <div class="grid md:grid-cols-2 gap-3 mb-3">
+                    <input type="text" placeholder="Achievement Title" value="${achievement.title || ''}" 
+                           class="p-3 border rounded-xl focus:ring-blue-500" onchange="updateAchievement(${index}, 'title', this.value)">
+                    <input type="text" placeholder="Date" value="${achievement.date || ''}" 
+                           class="p-3 border rounded-xl focus:ring-blue-500" onchange="updateAchievement(${index}, 'date', this.value)">
+                </div>
+                <div class="grid md:grid-cols-2 gap-3 mb-3">
+                    <select class="p-3 border rounded-xl focus:ring-blue-500" onchange="updateAchievement(${index}, 'type', this.value)">
+                        <option value="">Select Type</option>
+                        <option value="Academic" ${achievement.type === 'Academic' ? 'selected' : ''}>Academic</option>
+                        <option value="Professional" ${achievement.type === 'Professional' ? 'selected' : ''}>Professional</option>
+                        <option value="Competition" ${achievement.type === 'Competition' ? 'selected' : ''}>Competition</option>
+                        <option value="Award" ${achievement.type === 'Award' ? 'selected' : ''}>Award</option>
+                        <option value="Other" ${achievement.type === 'Other' ? 'selected' : ''}>Other</option>
+                    </select>
+                    <button type="button" onclick="removeAchievement(${index})" 
+                            class="px-3 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600">Remove</button>
+                </div>
+                <textarea placeholder="Achievement Description" class="p-3 border rounded-xl w-full h-20 resize-none focus:ring-blue-500" 
+                          onchange="updateAchievement(${index}, 'description', this.value)">${achievement.description || ''}</textarea>
+            `;
+            return div;
+        }
+
+        function createCodingProfileItem(profile, index) {
+            const div = document.createElement('div');
+            div.className = 'bg-gray-50 p-4 rounded-2xl border border-gray-200';
+            div.innerHTML = `
+                <div class="grid md:grid-cols-2 gap-3 mb-3">
+                    <select class="p-3 border rounded-xl focus:ring-blue-500" onchange="updateCodingProfile(${index}, 'platform', this.value)">
+                        <option value="">Select Platform</option>
+                        <option value="GitHub" ${profile.platform === 'GitHub' ? 'selected' : ''}>GitHub</option>
+                        <option value="LeetCode" ${profile.platform === 'LeetCode' ? 'selected' : ''}>LeetCode</option>
+                        <option value="HackerRank" ${profile.platform === 'HackerRank' ? 'selected' : ''}>HackerRank</option>
+                        <option value="Codeforces" ${profile.platform === 'Codeforces' ? 'selected' : ''}>Codeforces</option>
+                        <option value="CodeChef" ${profile.platform === 'CodeChef' ? 'selected' : ''}>CodeChef</option>
+                        <option value="Bitbucket" ${profile.platform === 'Bitbucket' ? 'selected' : ''}>Bitbucket</option>
+                        <option value="GitLab" ${profile.platform === 'GitLab' ? 'selected' : ''}>GitLab</option>
+                        <option value="Other" ${profile.platform === 'Other' ? 'selected' : ''}>Other</option>
+                    </select>
+                    <input type="text" placeholder="Username" value="${profile.username || ''}" 
+                           class="p-3 border rounded-xl focus:ring-blue-500" onchange="updateCodingProfile(${index}, 'username', this.value)">
+                </div>
+                <div class="grid md:grid-cols-2 gap-3 mb-3">
+                    <input type="url" placeholder="Profile URL" value="${profile.url || ''}" 
+                           class="p-3 border rounded-xl focus:ring-blue-500" onchange="updateCodingProfile(${index}, 'url', this.value)">
+                    <button type="button" onclick="removeCodingProfile(${index})" 
+                            class="px-3 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600">Remove</button>
+                </div>
+                <div class="mb-3">
+                    <input type="text" placeholder="Stats (e.g., 500+ points, 100+ commits)" value="${profile.stats || ''}" 
+                           class="p-3 border rounded-xl w-full focus:ring-blue-500" onchange="updateCodingProfile(${index}, 'stats', this.value)">
+                </div>
+                ${profile.url ? `<a href="${profile.url}" target="_blank" class="text-blue-600 text-sm hover:underline">View Profile →</a>` : ''}
+            `;
+            return div;
+        }
+
+        function addExperience() {
+            if (!resumeData.experience) resumeData.experience = [];
+            resumeData.experience.push({ role: '', company: '', period: '', desc: '' });
+            populateDynamicSections();
+            updatePreview();
+            scheduleSave();
+        }
+
+        function removeExperience(index) {
+            resumeData.experience.splice(index, 1);
+            populateDynamicSections();
+            updatePreview();
+            scheduleSave();
+        }
+
+        function updateExperience(index, field, value) {
+            resumeData.experience[index][field] = value;
+            updatePreview();
+            scheduleSave();
+        }
+
+        function addEducation() {
+            if (!resumeData.education) resumeData.education = [];
+            resumeData.education.push({ degree: '', school: '', year: '', cgpa: '', desc: '' });
+            populateDynamicSections();
+            updatePreview();
+            scheduleSave();
+        }
+
+        function removeEducation(index) {
+            resumeData.education.splice(index, 1);
+            populateDynamicSections();
+            updatePreview();
+            scheduleSave();
+        }
+
+        function updateEducation(index, field, value) {
+            resumeData.education[index][field] = value;
+            updatePreview();
+            scheduleSave();
+        }
+
+        function addProject() {
+            if (!resumeData.projects) resumeData.projects = [];
+            resumeData.projects.push({ name: '', technologies: '', description: '', image: '', link: '' });
+            populateDynamicSections();
+            updatePreview();
+            scheduleSave();
+        }
+
+        function removeProject(index) {
+            resumeData.projects.splice(index, 1);
+            populateDynamicSections();
+            updatePreview();
+            scheduleSave();
+        }
+
+        function updateProject(index, field, value) {
+            resumeData.projects[index][field] = value;
+            updatePreview();
+            scheduleSave();
+            if (field === 'image') {
+                const reader = new FileReader();
+                const file = value;
+                reader.onload = (e) => {
+                    resumeData.projects[index].image = e.target.result;
+                    populateDynamicSections();
+                    updatePreview();
+                    scheduleSave();
+                    showToast('📸 Project image uploaded');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function addCertification() {
+            if (!resumeData.certifications) resumeData.certifications = [];
+            resumeData.certifications.push({ name: '', issuer: '', date: '', image: '', link: '' });
+            populateDynamicSections();
+            updatePreview();
+            scheduleSave();
+        }
+
+        function removeCertification(index) {
+            resumeData.certifications.splice(index, 1);
+            populateDynamicSections();
+            updatePreview();
+            scheduleSave();
+        }
+
+        function updateCertification(index, field, value) {
+            resumeData.certifications[index][field] = value;
+            updatePreview();
+            scheduleSave();
+            if (field === 'image') {
+                const reader = new FileReader();
+                const file = value;
+                reader.onload = (e) => {
+                    resumeData.certifications[index].image = e.target.result;
+                    populateDynamicSections();
+                    updatePreview();
+                    scheduleSave();
+                    showToast('📸 Certification image uploaded');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function addAchievement() {
+            if (!resumeData.achievements) resumeData.achievements = [];
+            resumeData.achievements.push({ title: '', description: '', date: '', type: '' });
+            populateDynamicSections();
+            updatePreview();
+            scheduleSave();
+        }
+
+        function removeAchievement(index) {
+            resumeData.achievements.splice(index, 1);
+            populateDynamicSections();
+            updatePreview();
+            scheduleSave();
+        }
+
+        function updateAchievement(index, field, value) {
+            resumeData.achievements[index][field] = value;
+            updatePreview();
+            scheduleSave();
+        }
+
+        function addCodingProfile() {
+            if (!resumeData.codingProfiles) resumeData.codingProfiles = [];
+            resumeData.codingProfiles.push({ platform: '', username: '', url: '', stats: '' });
+            populateDynamicSections();
+            updatePreview();
+            scheduleSave();
+        }
+
+        function removeCodingProfile(index) {
+            resumeData.codingProfiles.splice(index, 1);
+            populateDynamicSections();
+            updatePreview();
+            scheduleSave();
+        }
+
+        function updateCodingProfile(index, field, value) {
+            resumeData.codingProfiles[index][field] = value;
+            updatePreview();
+            scheduleSave();
+        }
+
+        // ── File Upload Handlers ───────────────────────────────────────────
+        async function handleProjectImage(index, file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                resumeData.projects[index].image = e.target.result;
+                populateDynamicSections();
+                updatePreview();
+                scheduleSave();
+                showToast('📸 Project image uploaded');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function handleCertificationImage(index, file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                resumeData.certifications[index].image = e.target.result;
+                populateDynamicSections();
+                updatePreview();
+                showToast('📸 Certification image uploaded');
+            };
+            reader.readAsDataURL(file);
+        }
+        // ── Export Functions ─────────────────────────────────────────────
+        function setupExportButtons() {
+            const downloadPDF = document.getElementById('downloadPDF');
+            const downloadPNG = document.getElementById('downloadPNG');
+            console.log('Setting up export buttons - downloadPDF:', downloadPDF, 'downloadPNG:', downloadPNG);
+            
+            if (downloadPDF) {
+                downloadPDF.onclick = async () => {
+                    console.log('PDF download button clicked!');
+                    showToast('🖨️ Generating PDF...');
+                    
+                    try {
+                        // Get the preview element
+                        const previewElement = document.getElementById('preview');
+                        if (!previewElement) {
+                            showToast('❌ Preview element not found');
+                            return;
+                        }
+
+                        // Temporarily disable hover scales for perfect capture
+                        const elementsWithHover = previewElement.querySelectorAll('.hover-scale');
+                        elementsWithHover.forEach(el => el.classList.remove('hover-scale'));
+                        previewElement.classList.remove('hover-scale');
+                        
+                        const canvas = await html2canvas(previewElement, {
+                            scale: 4, // Very high resolution to prevent dull/blurry rendering
+                            useCORS: true,
+                            backgroundColor: '#ffffff'
+                        });
+
+                        // Use lossless PNG instead of JPEG to prevent compression artifacts
+                        const imgData = canvas.toDataURL('image/png');
+                        const { jsPDF } = window.jspdf;
+                        const pdf = new jsPDF('p', 'mm', 'a4');
+                        
+                        const pdfWidth = pdf.internal.pageSize.getWidth();
+                        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                        
+                        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                        
+                        const filename = `${(resumeData.name || 'resume').replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
+                        pdf.save(filename);
+
+                        // Restore hover scales and animations
+                        elementsWithHover.forEach(el => el.classList.add('hover-scale'));
+                        previewElement.classList.add('hover-scale');
+                        previewElement.classList.add('animate-fadeIn');
+                        
+                        showToast('✅ PDF downloaded successfully');
+                        
+                    } catch (error) {
+                        console.error('PDF generation error:', error.stack || error);
+                        showToast('❌ PDF generation failed. Please try again.');
+                    }
+                };
+            }
+            
+            if (downloadPNG) {
+                downloadPNG.onclick = async () => {
+                    console.log('PNG download button clicked!');
+                    showToast('🖼️ Generating Image...');
+                    try {
+                        const canvas = await html2canvas(document.getElementById('preview'), { 
+                            scale: 2, 
+                            useCORS: true,
+                            backgroundColor: '#ffffff'
+                        });
+                        const link = document.createElement('a');
+                        link.download = `${resumeData.name || resumeData.email?.split('@')[0] || 'resume'}.png`;
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                        showToast('✅ Image downloaded');
+                    } catch (e) {
+                        console.error(e);
+                        showToast('❌ Image export failed');
+                    }
+                };
+            }
+        }
+
+        // ── AI Resume Generation ──────────────────────────────────────────────
+        async function generateDemo() {
+            document.getElementById('aiGenerate').innerHTML = '<svg class="w-6 h-6 animate-spin" fill="currentColor"><use href="#spinner"></use></svg> Generating…';
+            lucide.createIcons();
+            try {
+                const res  = await fetch(`${API}/ai/generate`, {
+                    method : 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body   : JSON.stringify({ prompt: 'Generate a resume for a modern software engineer.' })
+                });
+                const { profile, warning } = await res.json();
+                if (profile) {
+                    Object.assign(resumeData, profile);
+                    populateForm();
+                    if (warning) showToast('⚠️ ' + warning);
+                    else showToast('🤖 AI resume generated!');
+                    scheduleSave();
+                }
+            } catch (e) {
+                showToast('⚠️ Backend offline – using demo data');
+                resumeData.name = 'Alex Rivera';
+                resumeData.title = 'Senior Full Stack Developer';
+                resumeData.phone = '+1 (555) 987-6543';
+                resumeData.email = 'alex.rivera@example.com';
+                resumeData.technicalSkills = ['React', 'Node.js', 'Express', 'MongoDB', 'TypeScript', 'AWS', 'Docker', 'GraphQL'];
+                resumeData.softSkills = ['Team Leadership', 'Problem Solving', 'Communication', 'Agile Methodology', 'Mentoring'];
+                resumeData.experience = [
+                    {
+                        role: 'Senior Full Stack Developer',
+                        company: 'Tech Innovations Inc.',
+                        period: '2021-Present',
+                        desc: 'Lead development of enterprise web applications using MERN stack. Mentored junior developers and implemented CI/CD pipelines.'
+                    },
+                    {
+                        role: 'Full Stack Developer',
+                        company: 'Digital Solutions Ltd.',
+                        period: '2019-2021',
+                        desc: 'Developed and maintained multiple client projects using React and Node.js. Improved application performance by 40%.'
+                    }
+                ];
+                resumeData.education = [
+                    {
+                        degree: 'Bachelor of Science in Computer Science',
+                        school: 'University of Technology',
+                        year: '2019',
+                        cgpa: '3.8/4.0'
+                    }
+                ];
+                resumeData.projects = [
+                    {
+                        name: 'E-Commerce Platform',
+                        technologies: 'React, Node.js, MongoDB, Stripe',
+                        description: 'Built a full-featured e-commerce platform with payment integration, user authentication, and admin dashboard.'
+                    },
+                    {
+                        name: 'Task Management App',
+                        technologies: 'React, TypeScript, GraphQL',
+                        description: 'Developed a collaborative task management application with real-time updates and team features.'
+                    }
+                ];
+                resumeData.certifications = [
+                    {
+                        name: 'AWS Certified Solutions Architect',
+                        issuer: 'Amazon Web Services',
+                        date: '2022'
+                    },
+                    {
+                        name: 'Google Cloud Professional Developer',
+                        issuer: 'Google Cloud',
+                        date: '2021'
+                    }
+                ];
+                resumeData.languages = ['English (Native)', 'Spanish (Fluent)', 'French (Basic)'];
+                resumeData.hobbies = ['Open Source Contributing', 'Technical Blogging', 'Mountain Biking', 'Chess'];
+                resumeData.github = 'github.com/alexrivera';
+                resumeData.linkedin = 'linkedin.com/in/alexrivera';
+                resumeData.portfolio = 'alexrivera.dev';
+                populateForm();
+            } finally {
+                document.getElementById('aiGenerate').innerHTML = '<svg class="w-6 h-6" fill="currentColor"><use href="#sparkles"></use></svg> AI Generate';
+                lucide.createIcons();
+            }
+        }
+
+        // ── AI button in nav ──────────────────────────────────────────────────
+        function setupAIButtons() {
+            const aiGenerate = document.getElementById('aiGenerate');
+            const aiBtn = document.getElementById('aiBtn');
+            console.log('Setting up AI buttons - aiGenerate:', aiGenerate, 'aiBtn:', aiBtn);
+            if (aiGenerate) {
+                aiGenerate.onclick = () => {
+                    console.log('AI Generate button clicked!');
+                    generateDemo();
+                };
+            }
+            if (aiBtn) {
+                aiBtn.onclick = () => {
+                    console.log('AI button clicked!');
+                    generateDemo();
+                };
+            }
+        }
+
+        // ── Sparkles Animation ─────────────────────────────────────────────
+        async function initSparkles() {
+            const container = document.getElementById('sparkles-container');
+            if (!container) return;
+
+            await tsParticles.load({
+                id: "sparkles",
+                element: container,
+                options: {
+                    background: {
+                        color: "transparent",
+                    },
+                    fullScreen: {
+                        enable: false,
+                        zIndex: 1,
+                    },
+                    fpsLimit: 120,
+                    interactivity: {
+                        events: {
+                            onClick: {
+                                enable: true,
+                                mode: "push",
+                            },
+                            onHover: {
+                                enable: false,
+                                mode: "repulse",
+                            },
+                            resize: true,
+                        },
+                        modes: {
+                            push: {
+                                quantity: 4,
+                            },
+                            repulse: {
+                                distance: 200,
+                                duration: 0.4,
+                            },
+                        },
+                    },
+                    particles: {
+                        color: {
+                            value: "#10b981",
+                        },
+                        move: {
+                            enable: true,
+                            speed: {
+                                min: 0.1,
+                                max: 1,
+                            },
+                        },
+                        number: {
+                            density: {
+                                enable: true,
+                                width: 400,
+                                height: 400,
+                            },
+                            value: 80,
+                        },
+                        opacity: {
+                            value: {
+                                min: 0.1,
+                                max: 1,
+                            },
+                            animation: {
+                                enable: true,
+                                speed: 4,
+                                sync: false,
+                            },
+                        },
+                        shape: {
+                            type: "circle",
+                        },
+                        size: {
+                            value: {
+                                min: 1,
+                                max: 3,
+                            },
+                        },
+                    },
+                    detectRetina: true,
+                }
+            });
+        }
+
+        // ── Init ──────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', function() {
+            // Google login check is now handled via 'load' event listener
+            
+            // Setup all event listeners and components
+            setupLoginModal();
+            setupRealtimeInputs();
+            setupTemplates();
+            initDropzone();
+            setupExportButtons();
+            setupAIButtons();
+            
+            // Only allow access if user has signed up
+            if (!sessionStorage.getItem('signedup')) {
+                // Show signup modal immediately if not signed up
+                document.getElementById('loginModal').classList.remove('hidden');
+                // Don't initialize preview until signup
+                return;
+            }
+            
+            if (sessionStorage.getItem('signedup')) {
+                document.getElementById('aiBtn').classList.remove('hidden');
+            }
+            updatePreview();
+            
+            // Initialize sparkles animation
+            initSparkles();
+        });
+    </script>
+    <script>
+        // Tailwind custom config
+        tailwind.config = {
+            theme: { extend: { animation: { 'fadeIn': 'fadeIn 1s ease-out', 'slideUp': 'slideUp 0.8s ease-out' } } }
+    </script>
+</body>
+
+</html>
