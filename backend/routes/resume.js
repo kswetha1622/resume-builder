@@ -16,12 +16,10 @@ const router = express.Router();
 router.get('/', authMiddleware, (req, res) => {
   try {
     const db  = getDB();
-    const row = db
-      .prepare('SELECT data, updated_at FROM resumes WHERE user_id = ?')
-      .get(req.user.id);
+    const row = db.get('resumes').find({ user_id: req.user.id }).value();
 
     if (!row) {
-      return res.json({ resume: null }); // No saved resume yet
+      return res.json({ resume: null });
     }
 
     res.json({
@@ -44,15 +42,21 @@ router.post('/', authMiddleware, (req, res) => {
       return res.status(400).json({ error: 'Invalid resume data' });
     }
 
-    // Upsert: insert or replace
-    db.prepare(`
-      INSERT INTO resumes (user_id, data, updated_at)
-      VALUES (?, ?, datetime('now'))
-      ON CONFLICT(user_id)
-      DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at
-    `).run(req.user.id, JSON.stringify(resumeData));
+    const existing = db.get('resumes').find({ user_id: req.user.id }).value();
+    const now      = new Date().toISOString();
 
-    res.json({ message: 'Resume saved', updatedAt: new Date().toISOString() });
+    if (existing) {
+      db.get('resumes')
+        .find({ user_id: req.user.id })
+        .assign({ data: JSON.stringify(resumeData), updated_at: now })
+        .write();
+    } else {
+      db.get('resumes')
+        .push({ id: Date.now(), user_id: req.user.id, data: JSON.stringify(resumeData), updated_at: now })
+        .write();
+    }
+
+    res.json({ message: 'Resume saved', updatedAt: now });
   } catch (err) {
     console.error('[resume/POST]', err);
     res.status(500).json({ error: 'Failed to save resume' });
